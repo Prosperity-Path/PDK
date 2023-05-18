@@ -1,21 +1,20 @@
 [
     {
-        "action": "field_first_message",
+        "testInput": "Hi- would like to try",
         "description": "initally asks user about what is going to be most valuable to them.",
         "trigger": "first-message"
     },
     {
-        "action": "field_new_message",
+        "testInput": "Im feeling frustrated that people dont understand my art",
         "description": "assesses new message from user",
         "trigger": "new-message"
     },
     {
-        "action": "field_reply",
+        "testInput": "Uncertainty",
         "description": "process a reply to an existing message",
         "trigger": "reply"
     },
     {
-        "action": "scheduled_function",
         "description": "runs process at scheduled time",
         "trigger": "schedule",
         "schedule": "0 8 * * *"
