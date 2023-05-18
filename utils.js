@@ -22,7 +22,7 @@ const messageSchema = {
     ]
 }
 
-const mailToMessage = (inboundMail) => {
+const mailToMessage = (mail) => {
     const mailMsgMap = {
         'messageId': mail['Message-Id'],
         'sender': mail['sender'],
