@@ -40,7 +40,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     if( message.inReplyTo ){
         routeName = '/reply'
         //We need to look up the message that's being replied to
-        const replyQuery = {selector: {messageId: replyTo}}
+        const replyQuery = {selector: {messageId: message.inReplyTo}}
         replyResult = await app.db.messages.findOne(replyQuery).exec()
     } else {
         //We need to check whether this is the first time we're 
@@ -60,14 +60,14 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     if(replyResult){
         message.replyingTo = replyResult._data.message
     }
-    const response  = await axios.post(env.APP_TARGET + routeName, resData)
+    const response  = await axios.post(env.APP_TARGET + routeName, message)
 
     //TODO: implement scheduling trigger
     //(new Date).toUTCString() 'o:deliverytime': 'Tue, 16 May 2023 19:11:14 GMT'
     const msg = {
         from: `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
-        to: mail['sender'],
-        subject: mail['subject'],
+        to: message['sender'],
+        subject: message['subject'],
         text: response.data,
     }
     const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
