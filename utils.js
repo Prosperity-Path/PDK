@@ -45,7 +45,7 @@ const mgMsgToMessage = (mgMsg, mgId) => {
         'sender': mgMsg['from'],
         'recipient': mgMsg['to'],
         'message': mgMsg['text'],
-        'subject': mgMsg['text'],
+        'subject': mgMsg['subject'],
         'date': (new Date).toUTCString()
     }
     validate(msgMap, messageSchema)

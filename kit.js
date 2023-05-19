@@ -75,6 +75,11 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
         text: response.data,
     }
     const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
+    // Store the message if it gets successfully sent
+    if (mgSendRes && mgSendRes.id) {
+        const sentMsg = utils.mgMsgToMessage(msg, mgSendRes.id)
+        await app.db.messages.insert(sentMsg)
+    }
 
     //let the ingress POST know that we received OK
     res.status(200).send(mgSendRes)
