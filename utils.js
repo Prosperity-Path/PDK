@@ -22,6 +22,16 @@ const messageSchema = {
     ]
 }
 
+const queryParamsToSelector = (queryParams, schema) => {
+    // Map the query params to props from msg schema
+    let selectorObj = {}
+    const props = Object.keys(schema.properties)
+    Object.keys(queryParams).forEach(param => {
+        selectorObj[param] = queryParams[param]
+    })
+    return {selector: selectorObj}
+}
+
 const mailToMessage = (mail) => {
     const mailMsgMap = {
         'messageId': mail['Message-Id'],
@@ -78,4 +88,9 @@ const envConfig = () => {
     return envConfig
 }
 
-module.exports = { messageSchema, mailToMessage, envConfig }
+module.exports = { 
+    messageSchema, 
+    mailToMessage, 
+    queryParamsToSelector,
+    envConfig 
+}
