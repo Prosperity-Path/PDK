@@ -24,9 +24,13 @@ app.use(express.urlencoded({
 }))
 
 const dataRoute = app.get('/messages', async (req, res) => {
-    //TODO: Fill in additional route params to allow an 
-    //app to query messages stored in the DB
-    res.send([])
+    //TODO: Add params outside of schema like pagination and limit
+    const query = utils.queryParamsToSelector(
+        req.query,
+        utils.messageSchema
+    )
+    results = await app.db.messages.find(query).exec()
+    res.send(results)
 })
 
 const ingressRoute = app.post('/ingress', async (req, res) => {
