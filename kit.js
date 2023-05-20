@@ -98,7 +98,10 @@ Promise.all(routePromises).then(async (res) => {
     app.db.addCollections({
         messages: {schema: utils.messageSchema}
     })
-    
+
+    //TODO: Before deploying, will need to evaluate changing the 
+    //host from localhost (127.0.0.1)
+    axios.defaults.headers.post['Msg-Data-Route'] = `http://127.0.0.1:${env.PORT}/messages`
     app.listen(env.PORT, () => {
         console.log(`Starting the prosperity dev kit @ localhost:${env.PORT}`)
     })
