@@ -24,14 +24,14 @@ app.use(express.urlencoded({
     extended: true
 }))
 
-//TODO: implement scheduling trigger route
-//(new Date).toUTCString() 'o:deliverytime': 'Tue, 16 May 2023 19:11:14 GMT'
+const SCHEDULE_SUBJ_STR = 'Scheduled Send'
+//TODO: determine if body could be useful instead of 'placeholder'
 const scheduleRoute = app.post('/schedule', async (req, res) => {
     try {
         const proposedDateTime = req.body.dateTime
         const newDate = new Date(Date.parse(proposedDateTime))
         const scheduleString = newDate.toUTCString()
-        const msg = {subject: 'Scheduled Send'}
+        const msg = {subject: SCHEDULE_SUBJ_STR}
         const sentMsg = await msgUtils.mailgunSend(
             mg, msg, "placeholder", scheduleString
         )
@@ -59,8 +59,10 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     
     const message = msgUtils.mailToMessage(req.body)
     let replyResult, routeName
-
-    if( message.inReplyTo ){
+    if(message.sender == message.recipient &&
+         message.subject == SCHEDULE_SUBJ_STR) {
+        routeName = '/scheduled'
+    } else if( message.inReplyTo ){
         routeName = '/reply'
         //We need to look up the message that's being replied to
         const replyQuery = {selector: {messageId: message.inReplyTo}}
