@@ -24,6 +24,9 @@ app.use(express.urlencoded({
     extended: true
 }))
 
+//TODO: implement scheduling trigger route
+//(new Date).toUTCString() 'o:deliverytime': 'Tue, 16 May 2023 19:11:14 GMT'
+
 const dataRoute = app.get('/messages', async (req, res) => {
     //TODO: Add params outside of schema like pagination and limit
     const query = appUtils.queryParamsToSelector(
@@ -67,23 +70,14 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     }
     const response  = await axios.post(env.APP_TARGET + routeName, message)
 
-    //TODO: implement scheduling trigger
-    //(new Date).toUTCString() 'o:deliverytime': 'Tue, 16 May 2023 19:11:14 GMT'
-    const msg = {
-        from: `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
-        to: message['sender'],
-        subject: message['subject'],
-        text: response.data,
-    }
-    const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
+    const sentMsg = await msgUtils.mailgunSend(mg, message, response.data)
     // Store the message if it gets successfully sent
-    if (mgSendRes && mgSendRes.id) {
-        const sentMsg = msgUtils.mgMsgToMessage(msg, mgSendRes.id)
+    if (sentMsg) {
         await app.db.messages.insert(sentMsg)
     }
 
     //let the ingress POST know that we received OK
-    res.status(200).send(mgSendRes)
+    res.status(200).send(sentMsg)
 })
 
 const routePromises = [ingressRoute, dataRoute]

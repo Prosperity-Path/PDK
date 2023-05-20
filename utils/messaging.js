@@ -1,4 +1,7 @@
+
+const appUtils = require('./application.js')  
 const validate = require('jsonschema').validate;
+const env = appUtils.envConfig()
 
 const messageSchema = {
     title: 'message schema',
@@ -22,6 +25,22 @@ const messageSchema = {
         'sender',
         'recipient'
     ]
+}
+
+const mailgunSend = async (mg, message, data) => {
+   let sentMsg 
+    const msg = {
+        from: `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
+        to: message['sender'],
+        subject: message['subject'],
+        text: data,
+    }
+    const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
+
+    if (mgSendRes && mgSendRes.id) {
+        sentMsg = mgMsgToMessage(msg, mgSendRes.id)
+    }
+    return sentMsg
 }
 
 const mgMsgToMessage = (mgMsg, mgId) => {
@@ -62,5 +81,5 @@ const mailToMessage = (mail) => {
 module.exports = { 
     messageSchema, 
     mailToMessage, 
-    mgMsgToMessage,
+    mailgunSend
 }
