@@ -26,6 +26,21 @@ app.use(express.urlencoded({
 
 //TODO: implement scheduling trigger route
 //(new Date).toUTCString() 'o:deliverytime': 'Tue, 16 May 2023 19:11:14 GMT'
+const scheduleRoute = app.post('/schedule', async (req, res) => {
+    try {
+        const proposedDateTime = req.body.dateTime
+        const newDate = new Date(Date.parse(proposedDateTime))
+        const scheduleString = newDate.toUTCString()
+        const msg = {subject: 'Scheduled Send'}
+        const sentMsg = await msgUtils.mailgunSend(
+            mg, msg, "placeholder", scheduleString
+        )
+        //let the ingress POST know that we received OK
+        res.status(200).send(sentMsg)
+    } catch (error) {
+        res.send(error)    
+    }
+})
 
 const dataRoute = app.get('/messages', async (req, res) => {
     //TODO: Add params outside of schema like pagination and limit
@@ -80,7 +95,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     res.status(200).send(sentMsg)
 })
 
-const routePromises = [ingressRoute, dataRoute]
+const routePromises = [ingressRoute, dataRoute, scheduleRoute]
 
 Promise.all(routePromises).then(async (res) => {
     // Once we have the routes setup, we setup the DB

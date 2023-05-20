@@ -27,13 +27,17 @@ const messageSchema = {
     ]
 }
 
-const mailgunSend = async (mg, message, data) => {
+const mailgunSend = async (mg, message, data, dateTime=null) => {
    let sentMsg 
+    const appAddress = `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`
     const msg = {
-        from: `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
-        to: message['sender'],
+        from: appAddress,
+        to: dateTime ? appAddress : message['sender'],
         subject: message['subject'],
         text: data,
+    }
+    if(dateTime){
+        msg['o:deliverytime'] = dateTime
     }
     const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
 
