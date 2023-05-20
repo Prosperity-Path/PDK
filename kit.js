@@ -1,6 +1,7 @@
 const express = require('express')
 const axios = require('axios')
-const utils = require('./utils.js')  
+const appUtils = require('./utils/application.js')  
+const msgUtils = require('./utils/messaging.js')  
 const bodyParser = require('body-parser')
 const rxdb = require('rxdb')
 const rxMemStore = require('rxdb/plugins/storage-memory')
@@ -9,7 +10,7 @@ const Mailgun = require('mailgun.js');
 
 //Ensures we have the requird env vars and if not
 //exit the process and report the missing var(s)
-const env = utils.envConfig()
+const env = appUtils.envConfig()
 
 const mailgun = new Mailgun(formData);
 const mg = mailgun.client({
@@ -25,9 +26,9 @@ app.use(express.urlencoded({
 
 const dataRoute = app.get('/messages', async (req, res) => {
     //TODO: Add params outside of schema like pagination and limit
-    const query = utils.queryParamsToSelector(
+    const query = appUtils.queryParamsToSelector(
         req.query,
-        utils.messageSchema
+        msgUtils.messageSchema
     )
     results = await app.db.messages.find(query).exec()
     res.send(results)
@@ -38,7 +39,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     //the APP_ADDRESS, so the ingress route provides the logic for 
     //routing and packaging a req to the APP_TARGET
     
-    const message = utils.mailToMessage(req.body)
+    const message = msgUtils.mailToMessage(req.body)
     let replyResult, routeName
 
     if( message.inReplyTo ){
@@ -77,7 +78,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
     // Store the message if it gets successfully sent
     if (mgSendRes && mgSendRes.id) {
-        const sentMsg = utils.mgMsgToMessage(msg, mgSendRes.id)
+        const sentMsg = msgUtils.mgMsgToMessage(msg, mgSendRes.id)
         await app.db.messages.insert(sentMsg)
     }
 
@@ -96,7 +97,7 @@ Promise.all(routePromises).then(async (res) => {
         storage: rxMemStore.getRxStorageMemory()
     })
     app.db.addCollections({
-        messages: {schema: utils.messageSchema}
+        messages: {schema: msgUtils.messageSchema}
     })
 
     //TODO: Before deploying, will need to evaluate changing the 
