@@ -1,6 +1,7 @@
 const express = require('express')
 const axios = require('axios')
-const utils = require('./utils.js')  
+const appUtils = require('./utils/application.js')  
+const msgUtils = require('./utils/messaging.js')  
 const bodyParser = require('body-parser')
 const rxdb = require('rxdb')
 const rxMemStore = require('rxdb/plugins/storage-memory')
@@ -9,7 +10,7 @@ const Mailgun = require('mailgun.js');
 
 //Ensures we have the requird env vars and if not
 //exit the process and report the missing var(s)
-const env = utils.envConfig()
+const env = appUtils.envConfig()
 
 const mailgun = new Mailgun(formData);
 const mg = mailgun.client({
@@ -23,11 +24,14 @@ app.use(express.urlencoded({
     extended: true
 }))
 
+//TODO: implement scheduling trigger route
+//(new Date).toUTCString() 'o:deliverytime': 'Tue, 16 May 2023 19:11:14 GMT'
+
 const dataRoute = app.get('/messages', async (req, res) => {
     //TODO: Add params outside of schema like pagination and limit
-    const query = utils.queryParamsToSelector(
+    const query = appUtils.queryParamsToSelector(
         req.query,
-        utils.messageSchema
+        msgUtils.messageSchema
     )
     results = await app.db.messages.find(query).exec()
     res.send(results)
@@ -38,7 +42,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     //the APP_ADDRESS, so the ingress route provides the logic for 
     //routing and packaging a req to the APP_TARGET
     
-    const message = utils.mailToMessage(req.body)
+    const message = msgUtils.mailToMessage(req.body)
     let replyResult, routeName
 
     if( message.inReplyTo ){
@@ -66,23 +70,14 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     }
     const response  = await axios.post(env.APP_TARGET + routeName, message)
 
-    //TODO: implement scheduling trigger
-    //(new Date).toUTCString() 'o:deliverytime': 'Tue, 16 May 2023 19:11:14 GMT'
-    const msg = {
-        from: `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
-        to: message['sender'],
-        subject: message['subject'],
-        text: response.data,
-    }
-    const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
+    const sentMsg = await msgUtils.mailgunSend(mg, message, response.data)
     // Store the message if it gets successfully sent
-    if (mgSendRes && mgSendRes.id) {
-        const sentMsg = utils.mgMsgToMessage(msg, mgSendRes.id)
+    if (sentMsg) {
         await app.db.messages.insert(sentMsg)
     }
 
     //let the ingress POST know that we received OK
-    res.status(200).send(mgSendRes)
+    res.status(200).send(sentMsg)
 })
 
 const routePromises = [ingressRoute, dataRoute]
@@ -96,7 +91,7 @@ Promise.all(routePromises).then(async (res) => {
         storage: rxMemStore.getRxStorageMemory()
     })
     app.db.addCollections({
-        messages: {schema: utils.messageSchema}
+        messages: {schema: msgUtils.messageSchema}
     })
 
     //TODO: Before deploying, will need to evaluate changing the 

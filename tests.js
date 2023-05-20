@@ -1,8 +1,8 @@
 const axios = require('axios')
-const utils = require('./utils.js')  
+const appUtils = require('./utils/application.js')  
 const triggers = require('./triggers.json')
 
-const env = utils.envConfig()
+const env = appUtils.envConfig()
 const host = `http://localhost:${env.PORT}`
 
 /* For these tests, our goal is to simply utilize all the
