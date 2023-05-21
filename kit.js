@@ -124,7 +124,7 @@ Promise.all(routePromises).then(async (res) => {
 
     //TODO: Before deploying, will need to evaluate changing the 
     //host from localhost (127.0.0.1)
-    axios.defaults.headers.post['Msg-Data-Route'] = `http://127.0.0.1:${env.PORT}/messages`
+    axios.defaults.headers.post['PDK-URL'] = `http://127.0.0.1:${env.PORT}`
     app.listen(env.PORT, () => {
         console.log(`Starting the prosperity dev kit @ localhost:${env.PORT}`)
     })
