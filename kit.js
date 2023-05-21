@@ -85,7 +85,18 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     if(replyResult){
         message.replyingTo = replyResult._data.message
     }
+
     const response  = await axios.post(env.APP_TARGET + routeName, message)
+
+    // In the case of then '/scheduled' route, the inbound
+    // message is an email that's a scheduled trigger instead 
+    // of a traditional email from a user, so we have to remap it
+    if(routeName == "/scheduled") {
+        const scheduledMsg = Object.assign({}, response.data)
+        response.data = scheduledMsg['message']
+        message['sender'] = scheduledMsg['to']
+        message['subject'] = scheduledMsg['subject']
+    }
 
     const sentMsg = await msgUtils.mailgunSend(mg, message, response.data)
     // Store the message if it gets successfully sent
