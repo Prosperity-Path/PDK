@@ -24,8 +24,23 @@ app.use(express.urlencoded({
     extended: true
 }))
 
-//TODO: implement scheduling trigger route
-//(new Date).toUTCString() 'o:deliverytime': 'Tue, 16 May 2023 19:11:14 GMT'
+const SCHEDULE_SUBJ_STR = 'Scheduled Send'
+//TODO: determine if body could be useful instead of 'placeholder'
+const scheduleRoute = app.post('/schedule', async (req, res) => {
+    try {
+        const proposedDateTime = req.body.dateTime
+        const newDate = new Date(Date.parse(proposedDateTime))
+        const scheduleString = newDate.toUTCString()
+        const msg = {subject: SCHEDULE_SUBJ_STR}
+        const sentMsg = await msgUtils.mailgunSend(
+            mg, msg, "placeholder", scheduleString
+        )
+        //let the ingress POST know that we received OK
+        res.status(200).send(sentMsg)
+    } catch (error) {
+        res.send(error)    
+    }
+})
 
 const dataRoute = app.get('/messages', async (req, res) => {
     //TODO: Add params outside of schema like pagination and limit
@@ -44,8 +59,10 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     
     const message = msgUtils.mailToMessage(req.body)
     let replyResult, routeName
-
-    if( message.inReplyTo ){
+    if(message.sender == message.recipient &&
+         message.subject == SCHEDULE_SUBJ_STR) {
+        routeName = '/scheduled'
+    } else if( message.inReplyTo ){
         routeName = '/reply'
         //We need to look up the message that's being replied to
         const replyQuery = {selector: {messageId: message.inReplyTo}}
@@ -68,7 +85,18 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     if(replyResult){
         message.replyingTo = replyResult._data.message
     }
+
     const response  = await axios.post(env.APP_TARGET + routeName, message)
+
+    // In the case of then '/scheduled' route, the inbound
+    // message is an email that's a scheduled trigger instead 
+    // of a traditional email from a user, so we have to remap it
+    if(routeName == "/scheduled") {
+        const scheduledMsg = Object.assign({}, response.data)
+        response.data = scheduledMsg['message']
+        message['sender'] = scheduledMsg['to']
+        message['subject'] = scheduledMsg['subject']
+    }
 
     const sentMsg = await msgUtils.mailgunSend(mg, message, response.data)
     // Store the message if it gets successfully sent
@@ -80,7 +108,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     res.status(200).send(sentMsg)
 })
 
-const routePromises = [ingressRoute, dataRoute]
+const routePromises = [ingressRoute, dataRoute, scheduleRoute]
 
 Promise.all(routePromises).then(async (res) => {
     // Once we have the routes setup, we setup the DB
