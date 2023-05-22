@@ -40,7 +40,15 @@ let mockNewMail = {
     'subject' : 'New thought' 
 }
 
-const runTests = async () => {
+const scheduledMail = {
+    'Message-Id': '<SNM8yDf6h5h7HQ_vx4e@mail.gmail.com>',
+    'recipient': `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
+    'sender': `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
+    'stripped-text': 'placeholder',
+    'subject': 'Scheduled Send'
+}
+
+const runCoreTests = async () => {
     const firstMailResponse = await axios.post(host + '/ingress', mockInitialMail)
     console.log('First mail response: ', firstMailResponse.data)
 
@@ -51,4 +59,14 @@ const runTests = async () => {
     console.log('New mail response: ', newMailResponse.data)
 }
 
-runTests()
+const runScheduleTests = async () => {
+    const scheduleResponse = await axios.post(host + '/schedule', {'dateTime': 
+'Sat, 20 May 2023 19:15:00 GMT'})
+    console.log('schedule response: ', scheduleResponse.data)
+
+    const scheduledResponse = await axios.post(host + '/ingress', scheduledMail)
+    console.log('scheduled response: ', scheduledResponse.data)
+}
+
+runCoreTests()
+runScheduleTests()
