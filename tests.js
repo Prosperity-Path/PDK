@@ -60,8 +60,10 @@ const runCoreTests = async () => {
 }
 
 const runScheduleTests = async () => {
-    const scheduleResponse = await axios.post(host + '/schedule', {'dateTime': 
-'Sat, 20 May 2023 19:15:00 GMT'})
+    const currentDateTime = new Date();
+    //increment DateTime by 5min
+    const incrementedDT = new Date(currentDateTime.getTime() + 5*60000).toUTCString()
+    const scheduleResponse = await axios.post(host + '/schedule', {'dateTime': incrementedDT})
     console.log('schedule response: ', scheduleResponse.data)
 
     const scheduledResponse = await axios.post(host + '/ingress', scheduledMail)
