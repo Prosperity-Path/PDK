@@ -24,16 +24,19 @@ app.use(express.urlencoded({
     extended: true
 }))
 
+//TODO: STOP route/logic
+
 const SCHEDULE_SUBJ_STR = 'Scheduled Send'
-//TODO: determine if body could be useful instead of 'placeholder'
+//TODO: VALIDATE body.to is a email
 const scheduleRoute = app.post('/schedule', async (req, res) => {
     try {
+        const sendTo = req.body.to
         const proposedDateTime = req.body.dateTime
         const newDate = new Date(Date.parse(proposedDateTime))
         const scheduleString = newDate.toUTCString()
         const msg = {subject: SCHEDULE_SUBJ_STR}
         const sentMsg = await msgUtils.mailgunSend(
-            mg, msg, "placeholder", scheduleString
+            mg, msg, sendTo, scheduleString
         )
         //let the ingress POST know that we received OK
         res.status(200).send(sentMsg)
@@ -62,6 +65,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     if(message.sender == message.recipient &&
          message.subject == SCHEDULE_SUBJ_STR) {
         routeName = '/scheduled'
+        message.recipient = message.message
     } else if( message.inReplyTo ){
         routeName = '/reply'
         //We need to look up the message that's being replied to
