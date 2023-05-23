@@ -41,10 +41,10 @@ let mockNewMail = {
 }
 
 const scheduledMail = {
-    'Message-Id': '<SNM8yDf6h5h7HQ_vx4e@mail.gmail.com>',
+    'Message-Id': '<ACTWP8yDf6h5h7HQ_vx4e@mail.gmail.com>',
     'recipient': `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
     'sender': `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`,
-    'stripped-text': 'placeholder',
+    'stripped-text': 'sam@wpmc.fund',
     'subject': 'Scheduled Send'
 }
 
@@ -61,9 +61,9 @@ const runCoreTests = async () => {
 
 const runScheduleTests = async () => {
     const currentDateTime = new Date();
-    //increment DateTime by 5min
+    //increment DateTime by 30min
     const incrementedDT = new Date(currentDateTime.getTime() + 5*60000).toUTCString()
-    const scheduleResponse = await axios.post(host + '/schedule', {'dateTime': incrementedDT})
+    const scheduleResponse = await axios.post(host + '/schedule', {'dateTime': incrementedDT, 'to': 'sam@wpmc.fund'})
     console.log('schedule response: ', scheduleResponse.data)
 
     const scheduledResponse = await axios.post(host + '/ingress', scheduledMail)
