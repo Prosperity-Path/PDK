@@ -32,13 +32,14 @@ const mailgunSend = async (mg, message, data, dateTime=null) => {
     const appAddress = `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`
     const msg = {
         from: appAddress,
-        to: dateTime ? appAddress : message['sender'],
+        to:  message['sender'],
         subject: message['subject'],
         text: data,
     }
     if(dateTime){
-        msg['o:deliverytime'] = dateTime
+        msg["o:deliverytime"] = dateTime
     }
+    console.log("MSG TO SEND in MG send: ", msg)
     const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
 
     if (mgSendRes && mgSendRes.id) {
