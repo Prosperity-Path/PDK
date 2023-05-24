@@ -71,7 +71,7 @@ const mailToMessage = (mail) => {
         'messageId': mail['Message-Id'],
         'sender': mail['sender'],
         'recipient': mail['recipient'],
-        'message': mail['stripped-text'],
+        'message': mail['stripped-text'] || "  ",
         'inReplyTo': mail['In-Reply-To'],
         'subject': mail['subject'],
         'date': mail['Date'],
