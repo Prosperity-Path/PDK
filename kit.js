@@ -86,7 +86,10 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     }
 
     const response  = await axios.post(env.APP_TARGET + routeName, message)
-    .catch(err => {console.error(err)})
+    .catch(err => {
+            response = {data: 'Unable to process.'}
+            console.error(err)}
+        )
 
     const sentMsg = await msgUtils.mailgunSend(mg, message, response.data)
     // Store the message if it gets successfully sent
