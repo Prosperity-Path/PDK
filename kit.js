@@ -78,6 +78,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     }
 
     await app.db.messages.insert(message)
+    .catch(err => {console.error(err)})
     //We don't need the text content of the message we're replying
     // to in the DB again, but it's useful to POST to the app
     if(replyResult){
@@ -85,16 +86,19 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
     }
 
     const response  = await axios.post(env.APP_TARGET + routeName, message)
+    .catch(err => {console.error(err)})
 
     const sentMsg = await msgUtils.mailgunSend(mg, message, response.data)
     // Store the message if it gets successfully sent
     if (sentMsg) {
         await app.db.messages.insert(sentMsg)
+        .catch(err => {console.error(err)})
     }
 
     if(routeName == '/first-message'){
         //Start scheduling sequence on first message
         const response  = await axios.post(env.APP_TARGET + '/scheduled', message)
+    .catch(err => {console.error(err)})
     }
 
     //let the ingress POST know that we received OK
