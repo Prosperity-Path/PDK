@@ -5,24 +5,17 @@ const msgUtils = require('./utils/messaging.js')
 const bodyParser = require('body-parser')
 const rxdb = require('rxdb')
 const rxMemStore = require('rxdb/plugins/storage-memory')
-const formData = require('form-data');
-const Mailgun = require('mailgun.js');
 
-//Ensures we have the requird env vars and if not
-//exit the process and report the missing var(s)
-const env = appUtils.envConfig()
-
-const mailgun = new Mailgun(formData);
-const mg = mailgun.client({
-    username: 'api', 
-    key: env.MAILGUN_API_KEY 
-});
 
 const app = express()
 app.use(bodyParser.json());
 app.use(express.urlencoded({
     extended: true
 }))
+
+//Ensures we have the requird env vars and if not
+//exit the process and report the missing var(s)
+const env = appUtils.envConfig(app)
 
 //TODO: STOP route/logic
 
@@ -33,8 +26,8 @@ const scheduleRoute = app.post('/schedule', async (req, res) => {
         const scheduleString = req.body.dateTime
         //const newDate = new Date(Date.parse(proposedDateTime))
         //const scheduleString = newDate.toUTCString()
-        const sentMsg = await msgUtils.mailgunSend(
-            mg, msg, msg.message, scheduleString
+        const sentMsg = await msgUtils.sendMail(
+            app, msg, msg.message, scheduleString
         )
         //let the ingress POST know that we received OK
         res.status(200).send(sentMsg)
@@ -91,7 +84,7 @@ const ingressRoute = app.post('/ingress', async (req, res) => {
             console.error(err)}
         )
 
-    const sentMsg = await msgUtils.mailgunSend(mg, message, response.data)
+    const sentMsg = await msgUtils.sendMail(app, message, response.data)
     // Store the message if it gets successfully sent
     if (sentMsg) {
         await app.db.messages.insert(sentMsg)
