@@ -1,7 +1,6 @@
 
 const appUtils = require('./application.js')  
 const validate = require('jsonschema').validate;
-const env = appUtils.envConfig()
 
 const messageSchema = {
     title: 'message schema',
@@ -27,9 +26,9 @@ const messageSchema = {
     ]
 }
 
-const mailgunSend = async (mg, message, data, dateTime=null) => {
+const sendMail = async (app, message, data, dateTime=null) => {
    let sentMsg 
-    const appAddress = `${env.APP_ADDRESS}@${env.MAIL_DOMAIN}`
+    const appAddress = `${app.APP_ADDRESS}@${app.MAIL_DOMAIN}`
     const msg = {
         from: appAddress,
         to:  message['sender'],
@@ -39,8 +38,7 @@ const mailgunSend = async (mg, message, data, dateTime=null) => {
     if(dateTime){
         msg["o:deliverytime"] = dateTime
     }
-    console.log("MSG TO SEND in MG send: ", msg)
-    const mgSendRes = await mg.messages.create(env.MAIL_DOMAIN, msg)
+    const mgSendRes = await app.mailer.messages.create(app.MAIL_DOMAIN, msg) 
 
     if (mgSendRes && mgSendRes.id) {
         sentMsg = mgMsgToMessage(msg, mgSendRes.id)
@@ -86,5 +84,5 @@ const mailToMessage = (mail) => {
 module.exports = { 
     messageSchema, 
     mailToMessage, 
-    mailgunSend
+    sendMail
 }
