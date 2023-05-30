@@ -17,15 +17,31 @@ The PDK is designed to be stateless and use a serverless function deployment app
 
 Given the statelessness, the PDK stores all incoming and outgoing messages, so that an application can query the previous interchange and construct the necessary context it needs. Naturally, the app can use its own database, but the PDK has one included that's accessed through REST, as well. 
 
-### Running with Docker
-First, build the docker image and pick a sensible image name.
+### Installing and Running Locally
+The PDK needs node installed. If you don't have the LTS version of node installed, [NVM](https://github.com/nvm-sh/nvm) is a good option for
+installation. You can install NVM with:
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+```
+and then to install node LTS
+```
+nvm install node # "node" is an alias for the latest version
+```
+#### Running the PDK
+First, ensure you have the dependencies installed:
+```
+npm install
+```
+You can run the PDK with 
+```
+node kit.js
+```
+By default the PDK runs a node server on `localhost:3000` and looks for a companion app on `localhost:8080`
 
-`docker build . -t {YOUR PDK IMAGE NAME}`
+### Docker
+While there's a `Dockerfile` included in the repo, it's more provided for testing and a foundation for future work.
+For local development, docker's networking layer prevents a docker-run PDK from reaching an app on `localhost:8080`. 
 
-Then, run the docker image with `docker-pdk-env` being the environment variable file name.
-
-`docker run -p 49160:3000 --env-file docker-pdk-env {YOUR PDK IMAGE NAME}
-`
 
 ## Contributing
-The PDK is an expressjs server with the necessary logic and utilities to abstract the non-value producing pieces of the development process away. So to contribute, you can submit a Pull Request describing the proposed improvement to the core server and accompanying utilities. If you don't feel comfortable with Javascript and/or expressjs, you can start building in a language you feel comfortable with and report any issues you find or open a discussion around the proposed improvement you have in mind. Please note that all contributions are welcome.
+The PDK is an expressjs server with the necessary logic and utilities to abstract the non-value producing pieces of the development process away. So to contribute, you can submit a Pull Request describing the proposed improvement to the core server and accompanying utilities. If you don't feel comfortable with Javascript and/or expressjs, you can start building in a language you feel comfortable with and report any issues you find or open a discussion around the proposed improvement you have in mind. All contributions are welcome!
