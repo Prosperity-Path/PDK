@@ -38,6 +38,9 @@ node kit.js
 ```
 By default the PDK runs a node server on `localhost:3000` and looks for a companion app on `localhost:8080`
 
+### Getting Started
+The best place to get started with development using the PDK is the [Getting Started Guide](https://github.com/Prosperity-Path/PDK/wiki/Getting-Started-Guide), which uses a demo app to step through the core PDK evelopment flow.
+
 ### Docker
 While there's a `Dockerfile` included in the repo, it's more provided for testing and a foundation for future work.
 For local development, docker's networking layer prevents a docker-run PDK from reaching an app on `localhost:8080`. 
