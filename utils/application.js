@@ -38,15 +38,20 @@ const envConfig = async (app) => {
 
 const appTestPoll = async (app) => {
     //TODO: improve error reporting about app being down
-    const res = await axios.get(app.APP_TARGET)
-    .catch(err => console.error(err))
-    try {
-        const appData = res.data
-        app.APP_ADDRESS = appData.appAddress
-        app.TEST_TRIGGERS = appData.triggers
-    } catch (error) {
-        console.error(error)
-    }
+    axios.get(app.APP_TARGET)
+        .then(res => {
+            try {
+                const appData = res.data
+                app.APP_ADDRESS = appData.appAddress
+                app.TEST_TRIGGERS = appData.triggers
+            } catch (error) {
+                console.error(error)
+            }
+        })
+        .catch(err => {
+            console.log("Issue connecting to application")
+            console.error(err.code)
+        })
 }
 
 

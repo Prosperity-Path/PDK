@@ -54,5 +54,5 @@ Promise.all(routePromises).then(async (res) => {
     app.listen(3000, () => {
         console.log(`Starting the prosperity dev kit`)
     })
-    setInterval(appUtils.appTestPoll, 10000, app);
+    setInterval(appUtils.appTestPoll, 30000, app);
 })
