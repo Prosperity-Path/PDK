@@ -14,7 +14,8 @@ const queryParamsToSelector = (queryParams, schema) => {
 }
 
 const envConfig = async (app) => {
-    cmdCtrlUrl = process.env.CMD_CTRL_URL || defaults.CMD_CTRL
+    const env = process.env
+    cmdCtrlUrl = process.env?.CMD_CTRL_URL || defaults.CMD_CTRL
     const mgRes = await axios.get(
         `${cmdCtrlUrl}/mg-config`
     )
@@ -31,12 +32,26 @@ const envConfig = async (app) => {
         process.exit()
     }
 
-    app.APP_TARGET = process.env.APP_TARGET || defaults.APP_TARGET
-    app.PORT = process.env.PORT || defaults.PORT
-
+    app.APP_TARGET = process.env?.APP_TARGET || defaults.APP_TARGET
+    app.PORT = process.env?.PORT || defaults.PORT
 }
+
+const appTestPoll = async (app) => {
+    //TODO: improve error reporting about app being down
+    const res = await axios.get(app.APP_TARGET)
+    .catch(err => console.error(err))
+    try {
+        const appData = res.data
+        app.APP_ADDRESS = appData.appAddress
+        app.TEST_TRIGGERS = appData.triggers
+    } catch (error) {
+        console.error(error)
+    }
+}
+
 
 module.exports = { 
     queryParamsToSelector,
-    envConfig 
+    envConfig,
+    appTestPoll
 }
