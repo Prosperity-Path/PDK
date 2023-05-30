@@ -43,6 +43,9 @@ const appTestPoll = async (app) => {
             try {
                 const appData = res.data
                 app.APP_ADDRESS = appData.appAddress
+                if(app.APP_ADDRESS){
+                    console.log("PDK serving:", app.APP_ADDRESS)
+                }
                 app.TEST_TRIGGERS = appData.triggers
             } catch (error) {
                 console.error(error)
