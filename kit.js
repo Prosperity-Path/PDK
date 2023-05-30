@@ -5,7 +5,8 @@ const msgUtils = require('./utils/messaging.js')
 const bodyParser = require('body-parser')
 const rxdb = require('rxdb')
 const rxMemStore = require('rxdb/plugins/storage-memory')
-
+const ingressRoute = require('./routes/ingress.js')  
+const testRoute = require('./routes/test.js')  
 
 const app = express()
 app.use(bodyParser.json());
@@ -15,26 +16,9 @@ app.use(express.urlencoded({
 
 //Ensures we have the requird env vars and if not
 //exit the process and report the missing var(s)
-const env = appUtils.envConfig(app)
+appUtils.envConfig(app)
 
 //TODO: STOP route/logic
-
-//TODO: VALIDATE body.to is a email
-const scheduleRoute = app.post('/schedule', async (req, res) => {
-    try {
-        const msg = req.body.msg
-        const scheduleString = req.body.dateTime
-        //const newDate = new Date(Date.parse(proposedDateTime))
-        //const scheduleString = newDate.toUTCString()
-        const sentMsg = await msgUtils.sendMail(
-            app, msg, msg.message, scheduleString
-        )
-        //let the ingress POST know that we received OK
-        res.status(200).send(sentMsg)
-    } catch (error) {
-        res.send(error)    
-    }
-})
 
 const dataRoute = app.get('/messages', async (req, res) => {
     //TODO: Add params outside of schema like pagination and limit
@@ -46,62 +30,11 @@ const dataRoute = app.get('/messages', async (req, res) => {
     res.send(results)
 })
 
-const ingressRoute = app.post('/ingress', async (req, res) => {
-    //We get a single POST request for all incoming mail routed to 
-    //the APP_ADDRESS, so the ingress route provides the logic for 
-    //routing and packaging a req to the APP_TARGET
-    
-    const message = msgUtils.mailToMessage(req.body)
-    let replyResult, routeName
-    if( message.inReplyTo ){
-        routeName = '/reply'
-        //We need to look up the message that's being replied to
-        const replyQuery = {selector: {messageId: message.inReplyTo}}
-        replyResult = await app.db.messages.findOne(replyQuery).exec()
-    } else {
-        //We need to check whether this is the first time we're 
-        //getting a msg from the sender
-        const senderQuery = {selector: {sender: message['sender']}}
-        const result = await app.db.messages.findOne(senderQuery).exec()
-        if (result && result._data) {
-            routeName = '/new-message'
-        } else {
-            routeName = '/first-message'
-        }
-    }
+const testsPromise = app.get('/tests/:route?', testRoute)
 
-    await app.db.messages.insert(message)
-    .catch(err => {console.error(err)})
-    //We don't need the text content of the message we're replying
-    // to in the DB again, but it's useful to POST to the app
-    if(replyResult){
-        message.replyingTo = replyResult._data.message
-    }
+const ingressPromise = app.post('/ingress', ingressRoute)
 
-    const response  = await axios.post(env.APP_TARGET + routeName, message)
-    .catch(err => {
-            response = {data: 'Unable to process.'}
-            console.error(err)}
-        )
-
-    const sentMsg = await msgUtils.sendMail(app, message, response.data)
-    // Store the message if it gets successfully sent
-    if (sentMsg) {
-        await app.db.messages.insert(sentMsg)
-        .catch(err => {console.error(err)})
-    }
-
-    if(routeName == '/first-message'){
-        //Start scheduling sequence on first message
-        const response  = await axios.post(env.APP_TARGET + '/scheduled', message)
-    .catch(err => {console.error(err)})
-    }
-
-    //let the ingress POST know that we received OK
-    res.status(200).send(sentMsg)
-})
-
-const routePromises = [ingressRoute, dataRoute, scheduleRoute]
+const routePromises = [ingressPromise, testsPromise, dataRoute]
 
 Promise.all(routePromises).then(async (res) => {
     // Once we have the routes setup, we setup the DB
@@ -117,8 +50,9 @@ Promise.all(routePromises).then(async (res) => {
 
     //TODO: Before deploying, will need to evaluate changing the 
     //host from localhost (127.0.0.1)
-    axios.defaults.headers.post['PDK-URL'] = `http://127.0.0.1:${env.PORT}`
-    app.listen(env.PORT, () => {
-        console.log(`Starting the prosperity dev kit @ localhost:${env.PORT}`)
+    axios.defaults.headers.post['PDK-URL'] = `http://127.0.0.1:${3000}`
+    app.listen(3000, () => {
+        console.log(`Starting the prosperity dev kit`)
     })
+    setInterval(appUtils.appTestPoll, 30000, app);
 })
