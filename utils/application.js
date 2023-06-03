@@ -36,12 +36,14 @@ const envConfig = async (app) => {
 
     app.APP_TARGET = process.env?.APP_TARGET || defaults.APP_TARGET
     app.PORT = process.env?.PORT || defaults.PORT
+    //Once env config setup is done, do first health check
+    appTestPoll(app)
 }
 
 const appTestPoll = async (app) => {
     //TODO: improve error reporting about app being down
     axios.get(app.APP_TARGET)
-        .then(res => {
+        .then(async (res) => {
             try {
                 const appData = res.data
                 app.APP_ADDRESS = appData.appAddress
