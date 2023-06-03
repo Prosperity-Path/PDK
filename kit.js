@@ -2,9 +2,8 @@ const express = require('express')
 const axios = require('axios')
 const appUtils = require('./utils/application.js')  
 const msgUtils = require('./utils/messaging.js')  
+const dbUtils = require('./utils/db.js')  
 const bodyParser = require('body-parser')
-const rxdb = require('rxdb')
-const rxMemStore = require('rxdb/plugins/storage-memory')
 const ingressRoute = require('./routes/ingress.js')  
 const testRoute = require('./routes/test.js')  
 
@@ -39,14 +38,7 @@ const routePromises = [ingressPromise, testsPromise, dataRoute]
 Promise.all(routePromises).then(async (res) => {
     // Once we have the routes setup, we setup the DB
     // In dev, we use an in-memory data store, else FoundationDB
-    // TODO: Configure foundation cluster for when deployed
-    app.db = await rxdb.createRxDatabase({
-        name: 'kitdb',
-        storage: rxMemStore.getRxStorageMemory()
-    })
-    app.db.addCollections({
-        messages: {schema: msgUtils.messageSchema}
-    })
+    await dbUtils.setupDB(app)
 
     //TODO: Before deploying, will need to evaluate changing the 
     //host from localhost (127.0.0.1)
