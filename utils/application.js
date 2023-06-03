@@ -15,6 +15,7 @@ const queryParamsToSelector = (queryParams, schema) => {
 
 const envConfig = async (app) => {
     const env = process.env
+    app.NODE_ENV = env.NODE_ENV
     cmdCtrlUrl = process.env?.CMD_CTRL_URL || defaults.CMD_CTRL
     const mgRes = await axios.get(
         `${cmdCtrlUrl}/mg-config`
