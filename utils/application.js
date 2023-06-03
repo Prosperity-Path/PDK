@@ -1,6 +1,7 @@
 const formData = require('form-data')
 const Mailgun = require('mailgun.js')
 const defaults = require('./defaults.js')
+const scheduling = require('./scheduling.js')
 const axios = require('axios')
 
 const queryParamsToSelector = (queryParams, schema) => {
@@ -45,6 +46,13 @@ const appTestPoll = async (app) => {
                 app.APP_ADDRESS = appData.appAddress
                 if(app.APP_ADDRESS){
                     console.log("PDK serving:", app.APP_ADDRESS)
+                }
+                if(appData.triggers){
+                    const scheduleTrigger = appData.triggers.find(t => t.trigger == 'schedule')
+                    const  atScheduledTime = scheduling.processCronStr(scheduleTrigger.schedule)
+                    if(atScheduledTime){
+    const response  = await axios.post(app.APP_TARGET + '/schedule', {})
+                    }
                 }
                 app.TEST_TRIGGERS = appData.triggers
             } catch (error) {
