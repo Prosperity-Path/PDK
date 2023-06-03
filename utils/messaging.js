@@ -26,7 +26,7 @@ const messageSchema = {
     ]
 }
 
-const sendMail = async (app, message, data, dateTime=null) => {
+const sendMail = async (app, message, data) => {
    let sentMsg 
     const appAddress = `${app.APP_ADDRESS}@${app.MAIL_DOMAIN}`
     const msg = {
@@ -34,9 +34,6 @@ const sendMail = async (app, message, data, dateTime=null) => {
         to:  message['sender'],
         subject: message['subject'],
         text: data,
-    }
-    if(dateTime){
-        msg["o:deliverytime"] = dateTime
     }
     const mgSendRes = await app.mailer.messages.create(app.MAIL_DOMAIN, msg) 
 
