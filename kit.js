@@ -27,10 +27,11 @@ const sendPromise = app.post('/send', async (req, res) => {
 })
 
 const messagesRoute = app.get('/messages', dataRoute.messages)
+const usersRoute = app.get('/users', dataRoute.users)
 const testsPromise = app.get('/tests/:route?', testRoute)
 const ingressPromise = app.post('/ingress', ingressRoute)
 
-const routePromises = [ingressPromise, sendPromise, testsPromise, messagesRoute]
+const routePromises = [ingressPromise, sendPromise, testsPromise, messagesRoute, usersRoute]
 
 Promise.all(routePromises).then(async (res) => {
     // Once we have the routes setup, we setup the DB
