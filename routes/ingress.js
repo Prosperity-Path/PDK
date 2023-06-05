@@ -33,14 +33,17 @@ const ingressRoute =  async (req, res) => {
     if(replyResult){
         message.replyingTo = replyResult._data.message
     }
-
-    const response  = await axios.post(app.APP_TARGET + routeName, message)
+    let response
+    response = await axios.post(app.APP_TARGET + routeName, message)
         .catch(err => {
             response = {data: 'Unable to process.'}
-            console.error(err)}
-        )
+            console.error(err)
+            res.status(422).send(response)
+        })
 
-    const sentMsg = await msgUtils.sendMail(app, message, response.data)
+    //To send the message back, the recipient is the sender
+    message.recipient = message.sender
+    const sentMsg = await msgUtils.sendMail(app, message, response?.data)
     // Store the message if it gets successfully sent
     if (sentMsg) {
         await app.db.messages.insert(sentMsg)

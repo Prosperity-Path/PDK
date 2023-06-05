@@ -6,6 +6,7 @@ const dbUtils = require('./utils/db.js')
 const bodyParser = require('body-parser')
 const ingressRoute = require('./routes/ingress.js')  
 const testRoute = require('./routes/test.js')  
+const dataRoute = require('./routes/data.js')  
 
 const app = express()
 app.use(bodyParser.json());
@@ -19,21 +20,18 @@ appUtils.envConfig(app)
 
 //TODO: STOP route/logic
 
-const dataRoute = app.get('/messages', async (req, res) => {
-    //TODO: Add params outside of schema like pagination and limit
-    const query = appUtils.queryParamsToSelector(
-        req.query,
-        msgUtils.messageSchema
-    )
-    results = await app.db.messages.find(query).exec()
-    res.send(results)
+const sendPromise = app.post('/send', async (req, res) => {
+    const message = req.body
+    const sent = await msgUtils.sendMail(app, message, message.message)
+    res.send(sent)
 })
 
+const messagesRoute = app.get('/messages', dataRoute.messages)
+const usersRoute = app.get('/users', dataRoute.users)
 const testsPromise = app.get('/tests/:route?', testRoute)
-
 const ingressPromise = app.post('/ingress', ingressRoute)
 
-const routePromises = [ingressPromise, testsPromise, dataRoute]
+const routePromises = [ingressPromise, sendPromise, testsPromise, messagesRoute, usersRoute]
 
 Promise.all(routePromises).then(async (res) => {
     // Once we have the routes setup, we setup the DB
