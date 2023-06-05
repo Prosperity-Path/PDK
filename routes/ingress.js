@@ -40,6 +40,8 @@ const ingressRoute =  async (req, res) => {
             console.error(err)}
         )
 
+    //To send the message back, the recipient is the sender
+    message.recipient = message.sender
     const sentMsg = await msgUtils.sendMail(app, message, response.data)
     // Store the message if it gets successfully sent
     if (sentMsg) {

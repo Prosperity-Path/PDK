@@ -31,7 +31,7 @@ const sendMail = async (app, message, data) => {
     const appAddress = `${app.APP_ADDRESS}@${app.MAIL_DOMAIN}`
     const msg = {
         from: appAddress,
-        to:  message['sender'],
+        to:  message['recipient'],
         subject: message['subject'],
         text: data,
     }
