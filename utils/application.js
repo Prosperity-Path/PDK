@@ -37,10 +37,10 @@ const envConfig = async (app) => {
     app.APP_TARGET = process.env?.APP_TARGET || defaults.APP_TARGET
     app.PORT = process.env?.PORT || defaults.PORT
     //Once env config setup is done, do first health check
-    appTestPoll(app)
+    testPoll(app)
 }
 
-const appTestPoll = async (app) => {
+const testPoll = async (app) => {
     //TODO: improve error reporting about app being down
     axios.get(app.APP_TARGET)
         .then(async (res) => {
@@ -72,5 +72,5 @@ const appTestPoll = async (app) => {
 module.exports = { 
     queryParamsToSelector,
     envConfig,
-    appTestPoll
+    testPoll
 }
