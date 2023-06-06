@@ -4,9 +4,7 @@ const appUtils = require('./utils/application.js')
 const msgUtils = require('./utils/messaging.js')  
 const dbUtils = require('./utils/db.js')  
 const bodyParser = require('body-parser')
-const ingressRoute = require('./routes/ingress.js')  
-const testRoute = require('./routes/test.js')  
-const dataRoute = require('./routes/data.js')  
+const routes = require('./routes')
 
 const app = express()
 app.use(bodyParser.json());
@@ -26,12 +24,12 @@ const sendPromise = app.post('/send', async (req, res) => {
     res.send(sent)
 })
 
-const messagesRoute = app.get('/messages', dataRoute.messages)
-const usersRoute = app.get('/users', dataRoute.users)
-const testsPromise = app.get('/tests/:route?', testRoute)
-const ingressPromise = app.post('/ingress', ingressRoute)
-
-const routePromises = [ingressPromise, sendPromise, testsPromise, messagesRoute, usersRoute]
+const routePromises = [sendPromise,
+    app.get('/messages', routes.messages),
+    app.get('/users', routes.users),
+    app.get('/tests/:route?', routes.tests),
+    app.post('/ingress', routes.ingress)
+]
 
 Promise.all(routePromises).then(async (res) => {
     // Once we have the routes setup, we setup the DB
