@@ -1,11 +1,10 @@
-const msgUtils = require('../utils/messaging.js')  
-const appUtils = require('../utils/application.js')  
+const utils = require('../utils')  
 
 const messages = async (req, res) => {
     const app = req.app
-    const query = appUtils.queryParamsToSelector(
+    const query = utils.app.queryParamsToSelector(
         req.query,
-        msgUtils.messageSchema
+        utils.msg.messageSchema
     )
     results = await app.db.messages.find(query).exec()
     res.send(results)

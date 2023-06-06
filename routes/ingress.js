@@ -1,5 +1,5 @@
 const axios = require('axios')
-const msgUtils = require('../utils/messaging.js')  
+const utils = require('../utils')  
 
 const ingressRoute =  async (req, res) => {
     //We get a single POST request for all incoming mail routed to 
@@ -7,7 +7,7 @@ const ingressRoute =  async (req, res) => {
     //routing and packaging a req to the APP_TARGET
 
     const app = req.app
-    const message = msgUtils.mailToMessage(req.body)
+    const message = utils.msg.mailToMessage(req.body)
     let replyResult, routeName
     if( message.inReplyTo ){
         routeName = '/reply'
@@ -43,7 +43,7 @@ const ingressRoute =  async (req, res) => {
 
     //To send the message back, the recipient is the sender
     message.recipient = message.sender
-    const sentMsg = await msgUtils.sendMail(app, message, response?.data)
+    const sentMsg = await utils.msg.sendMail(app, message, response?.data)
     // Store the message if it gets successfully sent
     if (sentMsg) {
         await app.db.messages.insert(sentMsg)
