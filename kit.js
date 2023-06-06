@@ -19,6 +19,7 @@ utils.app.envConfig(app)
 const sendPromise = app.post('/send', async (req, res) => {
     const message = req.body
     const sent = await utils.msg.sendMail(app, message, message.message)
+    await app.db.messages.insert(sent)
     res.send(sent)
 })
 
