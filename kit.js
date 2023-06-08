@@ -38,5 +38,5 @@ Promise.all(routePromises).then(async (res) => {
     app.listen(app.PORT, () => {
         console.log(`Starting the prosperity dev kit`)
     })
-    setInterval(utils.app.testPoll, 30000, app);
+    setInterval(utils.app.testPoll,app.POLL_INTERVAL, app);
 })

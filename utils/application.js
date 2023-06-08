@@ -18,6 +18,7 @@ const envConfig = async (app) => {
     const env = process.env
     app.NODE_ENV = env.NODE_ENV
     cmdCtrlUrl = process.env?.CMD_CTRL_URL || defaults.CMD_CTRL
+    app.POLL_INTERVAL = process.env?.POLL_INTERVAL || defaults.POLL_INTERVAL
     const mgRes = await axios.get(
         `${cmdCtrlUrl}/mg-config`
     )
@@ -51,8 +52,9 @@ const testPoll = async (app) => {
                     console.log("PDK serving:", app.APP_ADDRESS)
                 }
                 if(appData.triggers){
+                    const interval = app.POLL_INTERVAL / 1000
                     const scheduleTrigger = appData.triggers.find(t => t.trigger == 'schedule')
-                    const  atScheduledTime = scheduling.processCronStr(scheduleTrigger.schedule)
+                    const  atScheduledTime = scheduling.processCronStr(scheduleTrigger.schedule, interval)
                     if(atScheduledTime){
     const response  = await axios.post(app.APP_TARGET + '/schedule', {})
                     }
