@@ -35,7 +35,7 @@ const envConfig = async (app) => {
     }
 
     app.APP_TARGET = process.env?.APP_TARGET || defaults.APP_TARGET
-    app.PORT = process.env?.PORT || defaults.PORT
+    app.PORT = env?.PORT || defaults.PORT
     //Once env config setup is done, do first health check
     testPoll(app)
 }

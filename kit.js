@@ -10,10 +10,6 @@ app.use(express.urlencoded({
     extended: true
 }))
 
-//Ensures we have the requird env vars and if not
-//exit the process and report the missing var(s)
-utils.app.envConfig(app)
-
 //TODO: STOP route/logic
 
 const sendPromise = app.post('/send', async (req, res) => {
@@ -24,6 +20,7 @@ const sendPromise = app.post('/send', async (req, res) => {
 })
 
 const routePromises = [sendPromise,
+    utils.app.envConfig(app),
     app.get('/messages', routes.messages),
     app.get('/users', routes.users),
     app.get('/tests/:route?', routes.tests),
@@ -37,8 +34,8 @@ Promise.all(routePromises).then(async (res) => {
 
     //TODO: Before deploying, will need to evaluate changing the 
     //host from localhost (127.0.0.1)
-    axios.defaults.headers.post['PDK-URL'] = `http://127.0.0.1:${3000}`
-    app.listen(3000, () => {
+    axios.defaults.headers.post['PDK-URL'] = `http://127.0.0.1:${app.PORT}`
+    app.listen(app.PORT, () => {
         console.log(`Starting the prosperity dev kit`)
     })
     setInterval(utils.app.testPoll, 30000, app);
