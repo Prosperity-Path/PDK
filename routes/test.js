@@ -11,7 +11,7 @@ const testRoute = async (req, res) => {
     } else {
         const routeToTest = req.params?.route
         const routeTrigger = testTriggers.find(t => t.trigger == routeToTest)
-        req.body = utils.test.testTriggerMap(app, routeTrigger?.trigger)
+        req.body = utils.test.testTriggerMap(app, routeTrigger)
         if(routeToTest == 'schedule') {
             const response  = await axios.post(app.APP_TARGET + '/schedule', {})
             res.send(response.data)

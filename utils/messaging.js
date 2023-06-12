@@ -77,9 +77,21 @@ const mailToMessage = (mail) => {
     return mailMsgMap
 }
 
+const unsubscribeSchema = {
+    title: 'Unsubscribe schema',
+    version: 0,
+    primaryKey: 'email',
+    type: 'object',
+    properties: {
+        email: {type: 'string', maxLength: 200},
+        date: {type: 'string'}
+    }
+}
 
-module.exports = { 
+
+module.exports = {
     messageSchema, 
     mailToMessage, 
+    unsubscribeSchema, 
     sendMail
 }
