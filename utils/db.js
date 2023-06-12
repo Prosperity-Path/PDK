@@ -3,6 +3,8 @@ const rxMemStore = require('rxdb/plugins/storage-memory')
 const rxFoundationStore = require('rxdb/plugins/storage-foundationdb')
 const msgUtils = require('./messaging.js')  
 
+
+
 const setupDB = async (app) => {
     const prod = app.NODE_ENV == "production" 
     const rxEngine = prod ? rxFoundationStore.getRxStorageFoundationDB({apiVersion: 620}) : rxMemStore.getRxStorageMemory()
@@ -11,7 +13,8 @@ const setupDB = async (app) => {
         storage: rxEngine
     })
     app.db.addCollections({
-        messages: {schema: msgUtils.messageSchema}
+        messages: {schema: msgUtils.messageSchema},
+        unsubscribed: {schema: msgUtils.unsubscribeSchema}
     })
 }
 
