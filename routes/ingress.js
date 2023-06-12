@@ -11,6 +11,11 @@ const ingressRoute =  async (req, res) => {
     let replyResult, routeName
     if( message.inReplyTo ){
         routeName = '/reply'
+        if(message.message.toLowerCase() == "stop"){
+            await app.db.unsubscribed.insert(
+                {email: message.sender, date: new Date()}
+            )
+        }
         //We need to look up the message that's being replied to
         const replyQuery = {selector: {messageId: message.inReplyTo}}
         replyResult = await app.db.messages.findOne(replyQuery).exec()
@@ -19,7 +24,7 @@ const ingressRoute =  async (req, res) => {
         //getting a msg from the sender
         const senderQuery = {selector: {sender: message['sender']}}
         const result = await app.db.messages.findOne(senderQuery).exec()
-        if (result && result._data) {
+        if (result?._data) {
             routeName = '/new-message'
         } else {
             routeName = '/first-message'
